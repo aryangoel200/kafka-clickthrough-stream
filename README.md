@@ -43,6 +43,45 @@ flowchart LR
 
 **Flow:** clients emit clicks → the **producer** validates each event against the shared schema and publishes to the `clickthrough.events` topic → **Kafka** durably buffers the stream → the **consumer/stream processor** reads, enriches, and aggregates → results fan out to a **real-time analytics/dashboard** sink while raw events are archived to **durable storage** for replay and batch analysis.
 
+## AWS Free-Tier Deployment
+
+We deploy this entirely on the **AWS Free Tier**. Note that **Amazon MSK has no free tier**, so we self-host Kafka on an EC2 micro instance rather than using a managed broker.
+
+```mermaid
+flowchart LR
+    A[Web / App clients] -->|HTTPS| GW[API Gateway<br/>1M req/mo free]
+    GW --> LP[Lambda: Producer<br/>1M req/mo free]
+
+    subgraph EC2[EC2 t3.micro · 750 hrs/mo free]
+        K[(Self-hosted Kafka<br/>clickthrough.events)]
+    end
+
+    LP -->|validated ClickEvent| K
+    K --> LC[Lambda: Consumer/Processor<br/>1M req/mo free]
+
+    LC -->|aggregates| DDB[(DynamoDB<br/>25 GB free)]
+    LC -->|raw archive| S3[(S3<br/>5 GB free)]
+
+    DDB --> DASH[Dashboard]
+    CW[CloudWatch<br/>logs & metrics] -.observes.- LP
+    CW -.observes.- LC
+    CW -.observes.- EC2
+```
+
+### Service mapping
+
+| Component | AWS Service | Free-tier allowance |
+|-----------|-------------|---------------------|
+| Ingestion endpoint | **API Gateway** (HTTP API) | 1M requests / month |
+| Producer | **AWS Lambda** | 1M requests + 400k GB-s / month |
+| Kafka broker | **EC2 `t3.micro`** (self-hosted Kafka) | 750 hrs / month (12 months) |
+| Consumer / stream processor | **AWS Lambda** | shares the Lambda free tier |
+| Real-time aggregates store | **DynamoDB** | 25 GB storage + 25 RCU/WCU |
+| Raw event archive / data lake | **Amazon S3** | 5 GB standard storage |
+| Logs, metrics, alarms | **CloudWatch** | 10 metrics, 5 GB logs, 10 alarms |
+
+> **Free-tier watch-outs:** a single `t3.micro` Kafka node is fine for a demo but has no HA — keep replication factor at 1 and topics small. EBS storage for the EC2 volume (30 GB free) and data-transfer limits are the usual first costs to exceed, so set a **billing alarm** in CloudWatch before you start.
+
 ## Layout
 
 | Path | Purpose |
