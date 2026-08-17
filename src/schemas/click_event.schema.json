@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClickEvent",
+  "type": "object",
+  "required": ["event_id", "user_id", "url", "timestamp"],
+  "properties": {
+    "event_id": { "type": "string", "description": "Unique event identifier" },
+    "user_id": { "type": "string", "description": "Identifier of the user who clicked" },
+    "session_id": { "type": "string" },
+    "url": { "type": "string", "description": "Destination URL of the click-through" },
+    "referrer": { "type": "string" },
+    "element_id": { "type": "string", "description": "DOM element or ad id clicked" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "metadata": { "type": "object", "additionalProperties": true }
+  }
+}

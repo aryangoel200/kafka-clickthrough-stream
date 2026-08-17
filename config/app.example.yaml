@@ -1,0 +1,14 @@
+kafka:
+  bootstrap_servers: "localhost:9092"
+  client_id: "clickthrough-app"
+
+topics:
+  clickstream: "clickthrough.events"
+
+producer:
+  acks: "all"
+  linger_ms: 5
+
+consumer:
+  group_id: "clickthrough-processors"
+  auto_offset_reset: "earliest"
