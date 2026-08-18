@@ -9,6 +9,12 @@ target/
 build/
 dist/
 
+# Go build artifacts
+/producer
+/consumer
+*.test
+*.out
+
 # Env / secrets
 .env
 *.local

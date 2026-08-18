@@ -84,26 +84,38 @@ flowchart LR
 
 ## Layout
 
+The core producer and consumer are written in **Go** (using [`segmentio/kafka-go`](https://github.com/segmentio/kafka-go), a pure-Go client — no C/librdkafka dependency).
+
 | Path | Purpose |
 |------|---------|
-| `src/producer/` | Emits click-through events to Kafka |
-| `src/consumer/` | Reads and processes the clickstream |
-| `src/schemas/`  | Event schemas (Avro/JSON) |
-| `config/`       | Broker, topic, and app configuration |
-| `docker/`       | Local Kafka + Zookeeper stack |
-| `tests/`        | Unit and integration tests |
+| `cmd/producer/`   | Emits click-through events to Kafka |
+| `cmd/consumer/`   | Reads the clickstream and maintains real-time aggregates |
+| `internal/event/` | Shared `ClickEvent` type + validation (mirrors the JSON schema) |
+| `internal/kafka/` | Broker/topic config from environment |
+| `src/schemas/`    | Event schema (JSON) |
+| `config/`         | Example broker/topic configuration |
+| `docker/`         | Local Kafka + Zookeeper stack |
 
 ## Getting started
 
+Requires **Go 1.21+** and **Docker**.
+
 ```bash
 # 1. Start a local Kafka cluster
-docker compose -f docker/docker-compose.yml up -d
+make kafka-up
 
-# 2. Install dependencies
-# (fill in once a language/runtime is chosen)
+# 2. In one terminal, run the consumer
+make consumer
 
-# 3. Run the producer and consumer
+# 3. In another terminal, run the producer
+make producer
+
+# Events now flow: producer → Kafka → consumer prints live aggregates.
+# Stop the cluster when done:
+make kafka-down
 ```
+
+Override defaults via env vars: `KAFKA_BROKER`, `KAFKA_TOPIC`, `KAFKA_GROUP_ID`.
 
 ## Configuration
 

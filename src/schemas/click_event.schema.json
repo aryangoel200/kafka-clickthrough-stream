@@ -1,15 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ClickEvent",
+  "description": "A content-engagement event emitted by the Next.js blog front-end (article views, link clicks, scroll depth, CTA clicks).",
   "type": "object",
-  "required": ["event_id", "user_id", "url", "timestamp"],
+  "required": ["event_id", "event_type", "session_id", "url", "timestamp"],
   "properties": {
-    "event_id": { "type": "string", "description": "Unique event identifier" },
-    "user_id": { "type": "string", "description": "Identifier of the user who clicked" },
-    "session_id": { "type": "string" },
-    "url": { "type": "string", "description": "Destination URL of the click-through" },
-    "referrer": { "type": "string" },
-    "element_id": { "type": "string", "description": "DOM element or ad id clicked" },
+    "event_id": { "type": "string", "description": "Unique event identifier (uuid)" },
+    "event_type": {
+      "type": "string",
+      "description": "What the reader did",
+      "enum": ["page_view", "article_view", "link_click", "outbound_click", "scroll_depth", "cta_click", "share_click", "search"]
+    },
+    "user_id": { "type": "string", "description": "Anonymous/first-party visitor id (from a cookie)" },
+    "session_id": { "type": "string", "description": "Session identifier; partition key so one reader's events stay ordered" },
+    "url": { "type": "string", "description": "Page the event happened on" },
+    "referrer": { "type": "string", "description": "Where the reader came from" },
+    "article_slug": { "type": "string", "description": "Blog post slug, e.g. 'kafka-for-beginners'" },
+    "element_id": { "type": "string", "description": "Which link/CTA was clicked, e.g. 'newsletter-signup'" },
+    "scroll_pct": { "type": "integer", "minimum": 0, "maximum": 100, "description": "For scroll_depth events: 25/50/75/100" },
+    "dwell_ms": { "type": "integer", "description": "Time spent on the page in milliseconds" },
     "timestamp": { "type": "string", "format": "date-time" },
     "metadata": { "type": "object", "additionalProperties": true }
   }
